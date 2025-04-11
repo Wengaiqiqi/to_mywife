@@ -554,6 +554,54 @@
             top: 50%;
             transform: translateY(-50%);
         }
+
+        /* 题库选择按钮样式 */
+        .quiz-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .quiz-select-btn {
+            background: white;
+            border: 2px solid var(--primary-light);
+            border-radius: 15px;
+            padding: 15px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: left;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .quiz-select-btn:hover {
+            background: var(--primary-light);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(255, 133, 162, 0.2);
+        }
+
+        .quiz-select-btn::after {
+            content: '→';
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            opacity: 0;
+            transition: all 0.3s;
+        }
+
+        .quiz-select-btn:hover::after {
+            opacity: 1;
+            right: 15px;
+        }
+
+        .quiz-count {
+            color: var(--light-text);
+            font-size: 0.9em;
+            margin-left: 5px;
+        }
     </style>
 </head>
 <body>
@@ -572,6 +620,18 @@
             <input type="password" id="password-input" class="password-input" placeholder="输入专属密码">
             <button id="password-submit" class="btn">解锁题库</button>
             <div id="error-message" class="error-message">密码错误，再试一次吧！</div>
+        </div>
+    </div>
+
+    <!-- 题库选择层 -->
+    <div id="quiz-selection" class="question-count-container hidden">
+        <div class="cute-form">
+            <span class="form-icon">📚</span>
+            <h2>亲爱的老婆大人</h2>
+            <p>今天想做哪个题库呢？</p>
+            <div id="quiz-buttons" class="quiz-buttons">
+                <!-- 题库按钮会通过JS动态生成 -->
+            </div>
         </div>
     </div>
 
@@ -626,49 +686,62 @@
                 <div style="text-align: center; margin-top: 30px;">
                     <button id="restart-btn" class="btn">再来一次</button>
                     <button id="reselect-btn" class="btn">重新选择题目数</button>
+                    <button id="reselect-quiz-btn" class="btn">重新选择题库</button>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-            // 原始题库
-            const originalQuestions = [{
-  id: 1,
-  question: "老婆第一次做饭是做的什么？",
-  options: ["A. 西红柿炒蛋", "B. 青椒土豆丝", "C. 红烧肉", "D. 番茄牛腩"],
-  answer: "A"
-},
-{
-  id: 2,
-  question: "老婆是谁的女人",
-  options: ["A. wzl", "B. wzl", "C. wzl", "D. wzl"],
-  answer: "C"
-},
-{
-  id: 3,
-  question: "老婆最喜欢的甜品是？",
-  options: ["A. 蛋糕", "B. 冰淇淋", "C. 珍珠奶茶", "D. 曲奇饼"],
-  answer: "C"
-},
-{
-  id: 4,
-  question: "老婆最怕老公什么时候生气？",
-  options: ["A. 吃饭前", "B. 睡觉前", "C. 刚起床", "D. 周末"],
-  answer: "B"
-},
-{
-  id: 5,
-  question: "老公是谁",
-  options: ["A. wzl", "B. wzl", "C. wzl", "D. wzl"],
-  answer: "D"
-},
-{
-  id: 6,
-  question: "老公说过最多的情话是？",
-  options: ["A. 我爱你", "B. 你最美", "C. 早点睡", "D. 媳妇儿万岁"],
-  answer: "A"
-}];
+            // 多题库定义
+            const allQuizzes = {
+                "基础题库": [
+                    {
+                        id: 1,
+                        question: "老婆第一次做饭是做的什么？",
+                        options: ["A. 西红柿炒蛋", "B. 青椒土豆丝", "C. 红烧肉", "D. 番茄牛腩"],
+                        answer: "A"
+                    },
+                    {
+                        id: 2,
+                        question: "老婆是谁的女人",
+                        options: ["A. wzl", "B. wzl", "C. wzl", "D. wzl"],
+                        answer: "C"
+                    },
+                    {
+                        id: 3,
+                        question: "老婆最喜欢的甜品是？",
+                        options: ["A. 蛋糕", "B. 冰淇淋", "C. 珍珠奶茶", "D. 曲奇饼"],
+                        answer: "C"
+                    }
+                ],
+                "进阶题库": [
+                    {
+                        id: 1,
+                        question: "老婆最怕老公什么时候生气？",
+                        options: ["A. 吃饭前", "B. 睡觉前", "C. 刚起床", "D. 周末"],
+                        answer: "B"
+                    },
+                    {
+                        id: 2,
+                        question: "老公是谁",
+                        options: ["A. wzl", "B. wzl", "C. wzl", "D. wzl"],
+                        answer: "D"
+                    }
+                ],
+                "回忆题库": [
+                    {
+                        id: 1,
+                        question: "老公说过最多的情话是？",
+                        options: ["A. 我爱你", "B. 你最美", "C. 早点睡", "D. 媳妇儿万岁"],
+                        answer: "A"
+                    }
+                ]
+            };
+            
+            // 当前选择的题库
+            let currentQuizName = "";
+            let currentQuizQuestions = [];
             
             // 存储随机打乱后的题目（每次考试初始化时生成）
             let shuffledQuestions = [];
@@ -691,22 +764,57 @@
                     }
             });
 
+            // 密码验证成功后显示题库选择
             passwordSubmit.addEventListener('click', function() {
-                    if (passwordInput.value === password) {
-                            passwordProtection.classList.add('hidden');
-                            questionCountSelection.classList.remove('hidden');
-                            // 添加进入动画
-                            questionCountSelection.style.animation = 'fadeIn 0.5s ease';
-                    } else {
-                            errorMessage.style.display = 'block';
-                            passwordInput.value = '';
-                            passwordInput.focus();
-                            // 添加错误动画
-                            setTimeout(() => {
-                                    errorMessage.style.display = 'none';
-                            }, 3000);
-                    }
+                if (passwordInput.value === password) {
+                    passwordProtection.classList.add('hidden');
+                    // 显示题库选择界面，不再直接显示题目数量选择
+                    initQuizSelection();
+                    document.getElementById('quiz-selection').classList.remove('hidden');
+                } else {
+                    errorMessage.style.display = 'block';
+                    passwordInput.value = '';
+                    passwordInput.focus();
+                    setTimeout(() => {
+                        errorMessage.style.display = 'none';
+                    }, 3000);
+                }
             });
+
+            // 初始化题库选择界面
+            function initQuizSelection() {
+                const quizButtons = document.getElementById('quiz-buttons');
+                quizButtons.innerHTML = '';
+                
+                // 为每个题库创建按钮
+                Object.keys(allQuizzes).forEach(quizName => {
+                    const quizCount = allQuizzes[quizName].length;
+                    const btn = document.createElement('button');
+                    btn.className = 'quiz-select-btn';
+                    btn.innerHTML = `${quizName} <span class="quiz-count">(${quizCount}题)</span>`;
+                    btn.dataset.quiz = quizName;
+                    
+                    btn.addEventListener('click', function() {
+                        // 保存当前选择的题库
+                        currentQuizName = quizName;
+                        currentQuizQuestions = allQuizzes[quizName];
+                        
+                        // 更新题目数量选择界面的题库信息
+                        document.querySelector('#question-count-selection p').innerHTML = 
+                            `你选择了 <span style="color: var(--primary-dark); font-weight: bold;">${quizName}</span>，共有 
+                            <span style="color: var(--primary-dark); font-weight: bold;">${quizCount}</span> 题，想做几道呢？`;
+                        
+                        // 显示题目数量选择界面
+                        document.getElementById('quiz-selection').classList.add('hidden');
+                        questionCountSelection.classList.remove('hidden');
+                        questionCountInput.value = '';
+                        questionCountInput.max = quizCount;
+                        questionCountInput.focus();
+                    });
+                    
+                    quizButtons.appendChild(btn);
+                });
+            }
 
             // 题目数量选择逻辑
             const questionCountInput = document.getElementById('question-count-input');
@@ -723,7 +831,7 @@
 
             questionCountSubmit.addEventListener('click', function() {
                     const count = parseInt(questionCountInput.value);
-                    if (isNaN(count) || count < 1 || count > originalQuestions.length) {
+                    if (isNaN(count) || count < 1 || count > currentQuizQuestions.length) {
                             countErrorMessage.style.display = 'block';
                             setTimeout(() => {
                                     countErrorMessage.style.display = 'none';
@@ -755,8 +863,8 @@
                     // 重置已使用题目索引
                     usedQuestionIndices = [];
                     
-                    // 克隆原始题库并打乱顺序
-                    const shuffled = shuffle(originalQuestions.slice());
+                    // 克隆当前题库并打乱顺序
+                    const shuffled = shuffle(currentQuizQuestions.slice());
                     
                     // 确保抽取的题目数量不超过题库总数
                     const actualCount = Math.min(count, shuffled.length);
@@ -991,7 +1099,18 @@
                     questionCountInput.value = '';
             });
             
-            // 不需要重新定义题目，原始题库已经定义好了
+            // 重新选择题库按钮
+            document.getElementById('reselect-quiz-btn').addEventListener('click', function() {
+                    // 隐藏结果区域和考试内容
+                    document.getElementById('results').style.display = 'none';
+                    document.getElementById('submit-btn').style.display = 'block';
+                    examContent.classList.add('hidden');
+                    
+                    // 显示题库选择区域
+                    document.getElementById('quiz-selection').classList.remove('hidden');
+            });
+            
+            // 不需要重新定义题目，题库已经定义好了
             
             // 初始化时先显示密码保护层
             passwordInput.focus();
