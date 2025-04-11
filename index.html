@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>老婆专用的题库</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Sans+SC:wght@400;500;700&display=swap');
+
+        :root {
+            --primary-color: #ff85a2;
+            --primary-light: #ffd6e0;
+            --primary-dark: #ff5c7f;
+            --accent-color: #ffccd5;
+            --correct-color: #7ddbb6;
+            --incorrect-color: #ff8fa3;
+            --text-color: #4f2f4f;
+            --light-text: #7e5a7e;
+            --pink-gradient: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 99%, #fad0c4 100%);
+            --purple-gradient: linear-gradient(120deg, #e0c3fc 0%, #8ec5fc 100%);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            line-height: 1.6;
+            max-width: 850px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff6f8;
+            color: var(--text-color);
+            background-image: url("data:image/svg+xml,%3Csvg width='52' height='26' viewBox='0 0 52 26' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ff9eb6' fill-opacity='0.12'%3E%3Cpath d='M10 10c0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6h2c0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4v2c-3.314 0-6-2.686-6-6 0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6zm25.464-1.95l8.486 8.486-1.414 1.414-8.486-8.486 1.414-1.414z' /%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+
+        .container {
+            background-color: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(255, 133, 162, 0.15);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 8px;
+            background: var(--pink-gradient);
+            border-radius: 20px 20px 0 0;
+        }
+
+        h1, h2 {
+            font-family: 'Ma Shan Zheng', cursive;
+            text-align: center;
+            color: var(--primary-dark);
+            margin-bottom: 25px;
+            position: relative;
+            z-index: 1;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-top: 15px;
+        }
+
+        h1::after {
+            content: '❤️';
+            font-size: 1.5rem;
+            margin-left: 10px;
+            vertical-align: middle;
+            display: inline-block;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            color: var(--primary-color);
+        }
+
+        .question {
+            margin-bottom: 25px;
+            padding: 20px;
+            border-radius: 15px;
+            background-color: #fefeff;
+            box-shadow: 0 5px 15px rgba(255, 182, 193, 0.15);
+            transition: all 0.3s ease;
+            border-left: 5px solid var(--primary-light);
+            position: relative;
+        }
+
+        .question:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(255, 182, 193, 0.25);
+        }
+        
+        .question::before {
+            content: '💕';
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 3px 10px rgba(255, 133, 162, 0.2);
+            font-size: 14px;
+        }
+
+        .question-title {
+            font-weight: 500;
+            margin-bottom: 15px;
+            color: var(--text-color);
+            font-size: 1.05rem;
+            padding-bottom: 8px;
+            border-bottom: 2px dashed var(--primary-light);
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .option {
+            margin-left: 5px;
+            position: relative;
+            padding-left: 5px;
+        }
+
+        .option label {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            width: 100%;
+            padding: 8px 15px;
+            border-radius: 10px;
+            transition: all 0.2s;
+            background-color: #fff;
+            border: 2px solid transparent;
+        }
+
+        .option:hover label {
+            background-color: var(--primary-light);
+            border-color: var(--primary-light);
+        }
+
+        .option input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+        }
+
+        .option input[type="radio"] + label::before {
+            content: '';
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            border: 2px solid var(--primary-color);
+            margin-right: 12px;
+            transition: all 0.2s;
+            display: inline-block;
+            background-color: white;
+        }
+
+        .option input[type="radio"]:checked + label::before {
+            background-color: var(--primary-color);
+            box-shadow: 0 0 0 2px white inset;
+        }
+
+        .option input[type="radio"]:checked + label {
+            background-color: var(--primary-light);
+            border-color: var(--primary-color);
+            font-weight: 500;
+        }
+
+        .btn {
+            background: var(--pink-gradient);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            display: block;
+            margin: 25px auto;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(255, 133, 162, 0.3);
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .btn::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--purple-gradient);
+            transition: opacity 0.3s ease;
+            opacity: 0;
+            z-index: -1;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 20px rgba(255, 133, 162, 0.4);
+        }
+
+        .btn:hover::after {
+            opacity: 1;
+        }
+
+        .btn:active {
+            transform: translateY(1px);
+        }
+
+        #results {
+            margin-top: 25px;
+            padding: 20px;
+            border-radius: 15px;
+            background-color: white;
+            box-shadow: 0 5px 20px rgba(255, 133, 162, 0.15);
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px dashed var(--primary-light);
+        }
+
+        .result-score {
+            background: var(--primary-light);
+            padding: 8px 15px;
+            border-radius: 50px;
+            font-weight: 500;
+            color: var(--primary-dark);
+            position: relative;
+        }
+
+        .result-score::before {
+            content: '🌟';
+            margin-right: 5px;
+        }
+
+        .correct {
+            color: var(--correct-color);
+        }
+
+        .correct.option {
+            background-color: rgba(125, 219, 182, 0.1);
+            border-left: 3px solid var(--correct-color);
+            border-radius: 5px;
+            padding: 8px 12px;
+            position: relative;
+        }
+
+        .correct.option::after {
+            content: '✓';
+            position: absolute;
+            right: 15px;
+            color: var(--correct-color);
+            font-weight: bold;
+        }
+
+        .incorrect {
+            color: var(--incorrect-color);
+        }
+
+        .incorrect.option {
+            background-color: rgba(255, 143, 163, 0.1);
+            border-left: 3px solid var(--incorrect-color);
+            border-radius: 5px;
+            padding: 8px 12px;
+            position: relative;
+        }
+
+        .incorrect.option::after {
+            content: '✗';
+            position: absolute;
+            right: 15px;
+            color: var(--incorrect-color);
+            font-weight: bold;
+        }
+
+        .filter-controls {
+            margin: 20px 0;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .filter-btn {
+            background-color: white;
+            border: 2px solid var(--primary-light);
+            padding: 8px 18px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--light-text);
+        }
+
+        .filter-btn.active {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+            box-shadow: 0 3px 10px rgba(255, 133, 162, 0.3);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .status {
+            font-weight: bold;
+            margin-left: 10px;
+            font-size: 0.9rem;
+            padding: 4px 12px;
+            border-radius: 50px;
+            display: inline-block;
+        }
+
+        .correct .status {
+            background-color: rgba(125, 219, 182, 0.15);
+            color: var(--correct-color);
+        }
+
+        .incorrect .status {
+            background-color: rgba(255, 143, 163, 0.15);
+            color: var(--incorrect-color);
+        }
+
+        .progress-container {
+            margin: 25px 0;
+            position: relative;
+        }
+
+        .progress {
+            height: 12px;
+            background-color: var(--primary-light);
+            border-radius: 50px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--pink-gradient);
+            width: 0;
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(
+                90deg,
+                rgba(255,255,255,0) 0%,
+                rgba(255,255,255,0.4) 50%,
+                rgba(255,255,255,0) 100%
+            );
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .progress-text {
+            position: absolute;
+            right: 0;
+            top: -25px;
+            font-size: 14px;
+            color: var(--light-text);
+            background: white;
+            padding: 3px 10px;
+            border-radius: 50px;
+            border: 1px solid var(--primary-light);
+            box-shadow: 0 2px 5px rgba(255, 133, 162, 0.1);
+        }
+
+        /* 密码保护和题目数量选择样式 */
+        .password-container, .question-count-container {
+            text-align: center;
+            margin: 50px 0;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .cute-form {
+            background-color: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(255, 133, 162, 0.15);
+            position: relative;
+            max-width: 450px;
+            margin: 0 auto;
+        }
+
+        .cute-form::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 8px;
+            background: var(--pink-gradient);
+            border-radius: 20px 20px 0 0;
+        }
+
+        .form-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .password-input, .question-count-input {
+            padding: 15px 20px;
+            font-size: 16px;
+            border: 2px solid var(--primary-light);
+            border-radius: 50px;
+            width: 100%;
+            margin: 15px 0;
+            transition: all 0.3s;
+            outline: none;
+            text-align: center;
+            max-width: 250px;
+        }
+
+        .password-input:focus, .question-count-input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(255, 133, 162, 0.2);
+        }
+
+        .error-message {
+            color: var(--incorrect-color);
+            margin-top: 15px;
+            display: none;
+            padding: 8px 15px;
+            background-color: rgba(255, 143, 163, 0.1);
+            border-radius: 50px;
+            font-size: 14px;
+            animation: shake 0.5s ease;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+
+        /* 装饰元素 */
+        .decoration {
+            position: absolute;
+            z-index: -1;
+            opacity: 0.6;
+        }
+
+        .heart1 {
+            top: 5%;
+            left: 5%;
+            animation: float 6s infinite ease-in-out;
+        }
+
+        .heart2 {
+            bottom: 10%;
+            right: 5%;
+            animation: float 8s infinite ease-in-out;
+        }
+
+        .heart3 {
+            top: 50%;
+            right: 10%;
+            animation: float 7s infinite ease-in-out;
+        }
+
+        .heart4 {
+            bottom: 30%;
+            left: 8%;
+            animation: float 9s infinite ease-in-out;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-15px) rotate(5deg); }
+        }
+
+        /* 响应式调整 */
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+            
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .result-header {
+                flex-direction: column;
+                gap: 15px;
+                align-items: flex-start;
+            }
+        }
+
+        /* 调整选项样式 */
+        .option label {
+            padding: 10px 15px 10px 45px;
+            position: relative;
+        }
+        
+        .option input[type="radio"] + label::before {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+    </style>
+</head>
+<body>
+    <!-- 装饰元素 -->
+    <div class="decoration heart1">💖</div>
+    <div class="decoration heart2">💝</div>
+    <div class="decoration heart3">💕</div>
+    <div class="decoration heart4">💘</div>
+
+    <!-- 密码保护层 -->
+    <div id="password-protection" class="password-container">
+        <div class="cute-form">
+            <span class="form-icon">🔐</span>
+            <h2>老婆专用的小题库</h2>
+            <p>亲爱的老婆大人，请输入密码进入专属题库哦～</p>
+            <input type="password" id="password-input" class="password-input" placeholder="输入专属密码">
+            <button id="password-submit" class="btn">解锁题库</button>
+            <div id="error-message" class="error-message">密码错误，再试一次吧！</div>
+        </div>
+    </div>
+
+    <!-- 题目数量选择层 -->
+    <div id="question-count-selection" class="question-count-container hidden">
+        <div class="cute-form">
+            <span class="form-icon">📚</span>
+            <h2>亲爱的老婆大人</h2>
+            <p>今天想练习几道题呢？题库总共有 <span style="color: var(--primary-dark); font-weight: bold;">6</span> 题哦～</p>
+            <input type="number" id="question-count-input" class="question-count-input" min="1" max="200" placeholder="请输入题目数量">
+            <button id="question-count-submit" class="btn">开始练习</button>
+            <div id="count-error-message" class="error-message">请输入有效的题目数量哦～</div>
+        </div>
+    </div>
+
+    <!-- 考试系统内容 -->
+    <div id="exam-content" class="hidden">
+        <div class="container">
+            <h1>老婆专用的题库</h1>
+            
+            <div class="progress-container">
+                <div class="progress-text">已完成：<span id="completed-count">0</span>/<span id="total-count">0</span></div>
+                <div class="progress">
+                    <div class="progress-bar" id="progress-bar"></div>
+                </div>
+            </div>
+            
+            <div id="exam-form">
+                <!-- 题目将由 JavaScript 动态生成 -->
+            </div>
+            
+            <button id="submit-btn" class="btn">提交答案</button>
+            
+            <div id="results">
+                <div class="result-header">
+                    <h2>老婆的测试结果</h2>
+                    <div class="result-score">
+                        <span id="score">0</span>/<span id="total">0</span>
+                        <span>正确率: <span id="accuracy">0%</span></span>
+                    </div>
+                </div>
+                
+                <div class="filter-controls">
+                    <button class="filter-btn active" data-filter="all">全部题目</button>
+                    <button class="filter-btn" data-filter="incorrect">错题复习</button>
+                </div>
+                
+                <div id="result-details">
+                    <!-- 结果详情将由 JavaScript 动态生成 -->
+                </div>
+                
+                <div style="text-align: center; margin-top: 30px;">
+                    <button id="restart-btn" class="btn">再来一次</button>
+                    <button id="reselect-btn" class="btn">重新选择题目数</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+            // 原始题库
+            const originalQuestions = [{
+  id: 1,
+  question: "老婆第一次做饭是做的什么？",
+  options: ["A. 西红柿炒蛋", "B. 青椒土豆丝", "C. 红烧肉", "D. 番茄牛腩"],
+  answer: "A"
+},
+{
+  id: 2,
+  question: "老婆是谁的女人",
+  options: ["A. wzl", "B. wzl", "C. wzl", "D. wzl"],
+  answer: "C"
+},
+{
+  id: 3,
+  question: "老婆最喜欢的甜品是？",
+  options: ["A. 蛋糕", "B. 冰淇淋", "C. 珍珠奶茶", "D. 曲奇饼"],
+  answer: "C"
+},
+{
+  id: 4,
+  question: "老婆最怕老公什么时候生气？",
+  options: ["A. 吃饭前", "B. 睡觉前", "C. 刚起床", "D. 周末"],
+  answer: "B"
+},
+{
+  id: 5,
+  question: "老公是谁",
+  options: ["A. wzl", "B. wzl", "C. wzl", "D. wzl"],
+  answer: "D"
+},
+{
+  id: 6,
+  question: "老公说过最多的情话是？",
+  options: ["A. 我爱你", "B. 你最美", "C. 早点睡", "D. 媳妇儿万岁"],
+  answer: "A"
+}];
+            
+            // 存储随机打乱后的题目（每次考试初始化时生成）
+            let shuffledQuestions = [];
+            let userAnswers = {};
+            let results = {};
+            let usedQuestionIndices = []; // 存储已使用的题目索引
+
+            // 密码保护逻辑
+            const password = 'jy5247';
+            const passwordProtection = document.getElementById('password-protection');
+            const questionCountSelection = document.getElementById('question-count-selection');
+            const passwordInput = document.getElementById('password-input');
+            const passwordSubmit = document.getElementById('password-submit');
+            const errorMessage = document.getElementById('error-message');
+
+            // 为密码输入框添加回车键监听
+            passwordInput.addEventListener('keypress', function(event) {
+                    if (event.key === 'Enter') {
+                            passwordSubmit.click();
+                    }
+            });
+
+            passwordSubmit.addEventListener('click', function() {
+                    if (passwordInput.value === password) {
+                            passwordProtection.classList.add('hidden');
+                            questionCountSelection.classList.remove('hidden');
+                            // 添加进入动画
+                            questionCountSelection.style.animation = 'fadeIn 0.5s ease';
+                    } else {
+                            errorMessage.style.display = 'block';
+                            passwordInput.value = '';
+                            passwordInput.focus();
+                            // 添加错误动画
+                            setTimeout(() => {
+                                    errorMessage.style.display = 'none';
+                            }, 3000);
+                    }
+            });
+
+            // 题目数量选择逻辑
+            const questionCountInput = document.getElementById('question-count-input');
+            const questionCountSubmit = document.getElementById('question-count-submit');
+            const countErrorMessage = document.getElementById('count-error-message');
+            const examContent = document.getElementById('exam-content');
+
+            // 为题目数量输入框添加回车键监听
+            questionCountInput.addEventListener('keypress', function(event) {
+                    if (event.key === 'Enter') {
+                            questionCountSubmit.click();
+                    }
+            });
+
+            questionCountSubmit.addEventListener('click', function() {
+                    const count = parseInt(questionCountInput.value);
+                    if (isNaN(count) || count < 1 || count > originalQuestions.length) {
+                            countErrorMessage.style.display = 'block';
+                            setTimeout(() => {
+                                    countErrorMessage.style.display = 'none';
+                            }, 3000);
+                            return;
+                    }
+                    
+                    questionCountSelection.classList.add('hidden');
+                    examContent.classList.remove('hidden');
+                    examContent.style.animation = 'fadeIn 0.5s ease';
+                    initExam(count);
+            });
+
+            // 洗牌函数：使用 Fisher-Yates 算法随机打乱数组顺序
+            function shuffle(array) {
+                    let currentIndex = array.length, temporaryValue, randomIndex;
+                    while (currentIndex !== 0) {
+                            randomIndex = Math.floor(Math.random() * currentIndex);
+                            currentIndex -= 1;
+                            temporaryValue = array[currentIndex];
+                            array[currentIndex] = array[randomIndex];
+                            array[randomIndex] = temporaryValue;
+                    }
+                    return array;
+            }
+            
+            // 初始化考试：打乱题目顺序并动态生成题目
+            function initExam(count) {
+                    // 重置已使用题目索引
+                    usedQuestionIndices = [];
+                    
+                    // 克隆原始题库并打乱顺序
+                    const shuffled = shuffle(originalQuestions.slice());
+                    
+                    // 确保抽取的题目数量不超过题库总数
+                    const actualCount = Math.min(count, shuffled.length);
+                    
+                    // 抽取题目并确保每个题目只出现一次
+                    shuffledQuestions = [];
+                    for (let i = 0; i < actualCount; i++) {
+                            shuffledQuestions.push(shuffled[i]);
+                            usedQuestionIndices.push(i);
+                    }
+                    
+                    const examForm = document.getElementById('exam-form');
+                    examForm.innerHTML = '';
+                    
+                    shuffledQuestions.forEach((q, index) => {
+                            const questionDiv = document.createElement('div');
+                            questionDiv.className = 'question';
+                            questionDiv.id = `question-${q.id}`;
+                            
+                            questionDiv.innerHTML = `
+                                    <div class="question-title">${index + 1}. ${q.question}</div>
+                                    <div class="options">
+                                            ${q.options.map(option => `
+                                                    <div class="option">
+                                                            <input type="radio" id="q${q.id}-${option.charAt(0)}" name="question-${q.id}" value="${option.charAt(0)}">
+                                                            <label for="q${q.id}-${option.charAt(0)}">
+                                                                    ${option}
+                                                            </label>
+                                                    </div>
+                                            `).join('')}
+                                    </div>
+                            `;
+                            
+                            examForm.appendChild(questionDiv);
+                    });
+                    
+                    // 重置答案和结果
+                    userAnswers = {};
+                    results = {};
+                    updateProgressBar();
+                    
+                    // 更新总题目数显示
+                    document.getElementById('total-count').textContent = shuffledQuestions.length;
+                    document.getElementById('completed-count').textContent = '0';
+            }
+            
+            function updateProgressBar() {
+                    const answered = Object.keys(userAnswers).length;
+                    const total = shuffledQuestions.length;
+                    const percentage = (answered / total) * 100;
+                    document.getElementById('progress-bar').style.width = `${percentage}%`;
+                    document.getElementById('completed-count').textContent = answered;
+            }
+            
+            function submitExam() {
+                    // 检查是否所有题目均已作答，若发现漏答则滚动到第一个未答题目
+                    for (let i = 0; i < shuffledQuestions.length; i++) {
+                            const q = shuffledQuestions[i];
+                            if (!userAnswers[q.id] || userAnswers[q.id] === '') {
+                                    // 滚动至该题目位置
+                                    const questionElem = document.getElementById(`question-${q.id}`);
+                                    if (questionElem) {
+                                            questionElem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                            
+                                            // 给未完成的题目添加闪烁效果提示
+                                            questionElem.style.animation = 'none';
+                                            setTimeout(() => {
+                                                    questionElem.style.animation = 'shake 0.5s ease';
+                                            }, 10);
+                                    }
+                                    
+                                    // 使用更友好的提示
+                                    const sweetAlert = document.createElement('div');
+                                    sweetAlert.style.position = 'fixed';
+                                    sweetAlert.style.top = '50%';
+                                    sweetAlert.style.left = '50%';
+                                    sweetAlert.style.transform = 'translate(-50%, -50%)';
+                                    sweetAlert.style.background = 'white';
+                                    sweetAlert.style.padding = '20px 30px';
+                                    sweetAlert.style.borderRadius = '15px';
+                                    sweetAlert.style.boxShadow = '0 5px 25px rgba(0,0,0,0.2)';
+                                    sweetAlert.style.zIndex = '1000';
+                                    sweetAlert.style.animation = 'fadeIn 0.3s ease';
+                                    sweetAlert.style.textAlign = 'center';
+                                    sweetAlert.innerHTML = `
+                                            <div style="font-size: 3rem; margin-bottom: 10px;">😘</div>
+                                            <div style="font-weight: 500; color: var(--primary-dark); margin-bottom: 15px;">亲爱的老婆大人</div>
+                                            <div style="margin-bottom: 20px;">有题目还没有完成哦，再仔细看看吧～</div>
+                                            <button style="background: var(--pink-gradient); border: none; padding: 8px 20px; border-radius: 50px; color: white; cursor: pointer;">知道了</button>
+                                    `;
+                                    
+                                    document.body.appendChild(sweetAlert);
+                                    
+                                    // 点击关闭提示
+                                    sweetAlert.querySelector('button').addEventListener('click', () => {
+                                            document.body.removeChild(sweetAlert);
+                                    });
+                                    
+                                    return;
+                            }
+                    }
+                    
+                    // 计算结果
+                    let correctCount = 0;
+                    
+                    shuffledQuestions.forEach(q => {
+                            const isCorrect = userAnswers[q.id] === q.answer;
+                            results[q.id] = isCorrect;
+                            
+                            if (isCorrect) {
+                                    correctCount++;
+                            }
+                    });
+                    
+                    // 显示结果
+                    const resultsDiv = document.getElementById('results');
+                    const scoreSpan = document.getElementById('score');
+                    const totalSpan = document.getElementById('total');
+                    const accuracySpan = document.getElementById('accuracy');
+                    
+                    scoreSpan.textContent = correctCount;
+                    totalSpan.textContent = shuffledQuestions.length;
+                    accuracySpan.textContent = `${Math.round((correctCount / shuffledQuestions.length) * 100)}%`;
+                    
+                    // 显示详细结果
+                    const resultDetails = document.getElementById('result-details');
+                    resultDetails.innerHTML = '';
+                    
+                    shuffledQuestions.forEach((q, index) => {
+                            const resultItem = document.createElement('div');
+                            const isCorrect = results[q.id];
+                            
+                            resultItem.className = `question ${isCorrect ? 'correct' : 'incorrect'}`;
+                            resultItem.dataset.result = isCorrect ? 'correct' : 'incorrect';
+                            
+                            resultItem.innerHTML = `
+                                    <div class="question-title">
+                                            ${index + 1}. ${q.question}
+                                            <span class="status">${isCorrect ? '正确' : '错误'}</span>
+                                    </div>
+                                    <div class="options">
+                                            ${q.options.map((option, optIndex) => {
+                                                    const optionLetter = option.charAt(0);
+                                                    const isUserAnswer = userAnswers[q.id] === optionLetter;
+                                                    const isCorrectAnswer = q.answer === optionLetter;
+                                                    
+                                                    let optionClass = '';
+                                                    if (isUserAnswer && isCorrectAnswer) {
+                                                            optionClass = 'correct';
+                                                    } else if (isUserAnswer && !isCorrectAnswer) {
+                                                            optionClass = 'incorrect';
+                                                    } else if (isCorrectAnswer) {
+                                                            optionClass = 'correct';
+                                                    }
+                                                    
+                                                    return `
+                                                            <div class="option ${optionClass}">
+                                                                    ${option}
+                                                                    ${isUserAnswer ? ' (你的选择)' : ''}
+                                                                    ${isCorrectAnswer ? ' (正确答案)' : ''}
+                                                            </div>
+                                                    `;
+                                            }).join('')}
+                                    </div>
+                            `;
+                            
+                            resultDetails.appendChild(resultItem);
+                    });
+                    
+                    // 显示结果区域
+                    resultsDiv.style.display = 'block';
+                    document.getElementById('submit-btn').style.display = 'none';
+                    
+                    // 滚动到结果区域
+                    resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+            
+            // 添加答案改变时的事件监听
+            document.addEventListener('change', function(e) {
+                    if (e.target && e.target.type === 'radio') {
+                            const questionId = e.target.name.split('-')[1];
+                            userAnswers[questionId] = e.target.value;
+                            updateProgressBar();
+                    }
+            });
+            
+            // 提交按钮事件监听
+            document.getElementById('submit-btn').addEventListener('click', submitExam);
+            
+            // 过滤结果按钮事件
+            document.querySelector('.filter-controls').addEventListener('click', function(e) {
+                    if (e.target.classList.contains('filter-btn')) {
+                            const filter = e.target.dataset.filter;
+                            
+                            // 更新按钮状态
+                            document.querySelectorAll('.filter-btn').forEach(btn => {
+                                    btn.classList.remove('active');
+                            });
+                            e.target.classList.add('active');
+                            
+                            // 过滤结果
+                            const resultItems = document.querySelectorAll('#result-details .question');
+                            resultItems.forEach(item => {
+                                    if (filter === 'all') {
+                                            item.classList.remove('hidden');
+                                    } else if (filter === 'incorrect') {
+                                            item.classList.toggle('hidden', item.dataset.result !== 'incorrect');
+                                    }
+                            });
+                    }
+            });
+            
+            // 重新开始按钮
+            document.getElementById('restart-btn').addEventListener('click', function() {
+                    // 隐藏结果区域
+                    document.getElementById('results').style.display = 'none';
+                    document.getElementById('submit-btn').style.display = 'block';
+                    
+                    // 重新初始化测试，使用相同数量的题目
+                    initExam(shuffledQuestions.length);
+            });
+            
+            // 重新选择题目数按钮
+            document.getElementById('reselect-btn').addEventListener('click', function() {
+                    // 隐藏结果区域和考试内容
+                    document.getElementById('results').style.display = 'none';
+                    document.getElementById('submit-btn').style.display = 'block';
+                    examContent.classList.add('hidden');
+                    
+                    // 显示题目数量选择区域
+                    questionCountSelection.classList.remove('hidden');
+                    questionCountInput.value = '';
+            });
+            
+            // 不需要重新定义题目，原始题库已经定义好了
+            
+            // 初始化时先显示密码保护层
+            passwordInput.focus();
+    </script>
+</body>
+</html>
