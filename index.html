@@ -635,6 +635,23 @@
         </div>
     </div>
 
+    <!-- 模式选择层 -->
+    <div id="mode-selection" class="question-count-container hidden">
+        <div class="cute-form">
+            <span class="form-icon">🎯</span>
+            <h2>学习模式选择</h2>
+            <p>请选择你喜欢的学习模式～</p>
+            <div class="quiz-buttons">
+                <button id="exam-mode-btn" class="quiz-select-btn">
+                    考试模式 <span class="quiz-count">(做完所有题后查看答案)</span>
+                </button>
+                <button id="practice-mode-btn" class="quiz-select-btn">
+                    练习模式 <span class="quiz-count">(每题完成后立即显示答案)</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- 题目数量选择层 -->
     <div id="question-count-selection" class="question-count-container hidden">
         <div class="cute-form">
@@ -1448,17 +1465,38 @@
                             `你选择了 <span style="color: var(--primary-dark); font-weight: bold;">${quizName}</span>，共有 
                             <span style="color: var(--primary-dark); font-weight: bold;">${quizCount}</span> 题，想做几道呢？`;
                         
-                        // 显示题目数量选择界面
+                        // 显示模式选择界面
                         document.getElementById('quiz-selection').classList.add('hidden');
-                        questionCountSelection.classList.remove('hidden');
-                        questionCountInput.value = '';
-                        questionCountInput.max = quizCount;
-                        questionCountInput.focus();
+                        document.getElementById('mode-selection').classList.remove('hidden');
                     });
                     
                     quizButtons.appendChild(btn);
                 });
             }
+
+            // 模式选择逻辑
+            const modeSelection = document.getElementById('mode-selection');
+            const examModeBtn = document.getElementById('exam-mode-btn');
+            const practiceModeBtn = document.getElementById('practice-mode-btn');
+            let isPracticeMode = false;
+
+            examModeBtn.addEventListener('click', function() {
+                isPracticeMode = false;
+                modeSelection.classList.add('hidden');
+                questionCountSelection.classList.remove('hidden');
+                questionCountInput.value = '';
+                questionCountInput.max = currentQuizQuestions.length;
+                questionCountInput.focus();
+            });
+
+            practiceModeBtn.addEventListener('click', function() {
+                isPracticeMode = true;
+                modeSelection.classList.add('hidden');
+                questionCountSelection.classList.remove('hidden');
+                questionCountInput.value = '';
+                questionCountInput.max = currentQuizQuestions.length;
+                questionCountInput.focus();
+            });
 
             // 题目数量选择逻辑
             const questionCountInput = document.getElementById('question-count-input');
@@ -1692,6 +1730,23 @@
                             const questionId = e.target.name.split('-')[1];
                             userAnswers[questionId] = e.target.value;
                             updateProgressBar();
+
+                            // 如果是练习模式，立即显示答案
+                            if (isPracticeMode) {
+                                const questionElem = document.getElementById(`question-${questionId}`);
+                                const question = shuffledQuestions.find(q => q.id == questionId);
+                                const isCorrect = userAnswers[questionId] === question.answer;
+
+                                const resultDiv = document.createElement('div');
+                                resultDiv.className = `question ${isCorrect ? 'correct' : 'incorrect'}`;
+                                resultDiv.innerHTML = `
+                                    <div class="question-title">
+                                        ${isCorrect ? '正确！' : '错误！正确答案是：' + question.answer}
+                                    </div>
+                                `;
+
+                                questionElem.appendChild(resultDiv);
+                            }
                     }
             });
             
