@@ -921,6 +921,79 @@
                 color: black;
             }
         }
+
+        .answer-comparison {
+            margin-top: 15px;
+            padding: 10px 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        .answer-comparison p {
+            margin: 5px 0;
+        }
+        
+        .user-answer {
+            color: var(--incorrect-color);
+            font-weight: 500;
+        }
+        
+        .correct-answer {
+            color: var(--correct-color);
+            font-weight: 500;
+        }
+        
+        .user-answer-mark {
+            font-size: 12px;
+            color: var(--incorrect-color);
+            margin-left: 8px;
+            font-weight: 500;
+        }
+        
+        .correct-answer-mark {
+            font-size: 12px;
+            color: var(--correct-color);
+            margin-left: 8px;
+            font-weight: 500;
+        }
+        
+        .option {
+            position: relative;
+            padding: 10px 15px;
+            margin: 5px 0;
+            border-radius: 8px;
+            background: white;
+            transition: all 0.3s ease;
+        }
+        
+        .option.correct {
+            background: rgba(125, 219, 182, 0.1);
+            border-left: 3px solid var(--correct-color);
+        }
+        
+        .option.incorrect {
+            background: rgba(255, 143, 163, 0.1);
+            border-left: 3px solid var(--incorrect-color);
+        }
+        
+        .option i {
+            margin-left: 8px;
+        }
+        
+        body.dark-theme .answer-comparison {
+            background: #1f3156;
+        }
+        
+        body.dark-theme .option {
+            background: #242c48;
+        }
+
+        .option-letter {
+            font-weight: bold;
+            margin-right: 8px;
+            color: var(--primary-color);
+        }
     </style>
 </head>
 <body>
@@ -1043,9 +1116,16 @@
                 <!-- 显示总作答用时 -->
                 <div id="final-time" style="text-align: center; font-size: 16px; margin-bottom: 15px;"></div>
                 
+                <!-- 添加结果评价 -->
+                <div id="result-evaluation" style="text-align: center; margin: 20px 0; padding: 15px; border-radius: 10px; background: var(--primary-light);">
+                    <h3 style="margin: 0; color: var(--primary-dark);">评价</h3>
+                    <p id="evaluation-text" style="margin: 10px 0 0; font-size: 16px;"></p>
+                </div>
+                
                 <div class="filter-controls">
                     <button class="filter-btn active" data-filter="all">全部题目</button>
                     <button class="filter-btn" data-filter="incorrect">错题复习</button>
+                    <button class="filter-btn" data-filter="correct">正确题目</button>
                 </div>
                 
                 <div id="result-details">
@@ -30621,6 +30701,110 @@
           document.getElementById('total-count').textContent = total;
       }
       
+      function displayResults(filter) {
+          const resultDetails = document.getElementById('result-details');
+          resultDetails.innerHTML = '';
+          Object.values(results).forEach((result, index) => {
+              if (filter === 'incorrect' && result.isCorrect) return;
+              if (filter === 'correct' && !result.isCorrect) return;
+              
+              const resultDiv = document.createElement('div');
+              resultDiv.className = `question fade-in ${result.isCorrect ? 'correct' : 'incorrect'}`;
+              
+              if (result.question.options.length === 0) {
+                  resultDiv.innerHTML = `
+                      <div class="question-title">
+                          <span class="question-number">${index + 1}. </span>
+                          ${result.question.question}
+                          <span class="question-type">(简答题)</span>
+                      </div>
+                      <div class="options">
+                          <div class="text-answer">
+                              <p><strong>你的答案：</strong></p>
+                              <p style="color: var(--incorrect-color);">${result.userAnswer || '未作答'}</p>
+                              <p><strong>参考答案：</strong></p>
+                              <p style="color: var(--correct-color);">${result.question.answer}</p>
+                          </div>
+                      </div>
+                  `;
+              } else {
+                  // 处理选择题
+                  const optionsHtml = result.question.options.map((option, optIndex) => {
+                      const letter = String.fromCharCode(65 + optIndex); // A, B, C, D, E...
+                      let className = '';
+                      let icon = '';
+                      let isUserAnswer = false;
+                      let isCorrectAnswer = false;
+                      
+                      // 检查是否是正确答案
+                      if (Array.isArray(result.question.answer)) {
+                          // 多选题
+                          isCorrectAnswer = result.question.answer.includes(letter);
+                          isUserAnswer = result.userAnswer && result.userAnswer.includes(letter);
+                      } else {
+                          // 单选题
+                          isCorrectAnswer = letter === result.question.answer;
+                          isUserAnswer = letter === result.userAnswer;
+                      }
+                      
+                      // 设置样式和图标
+                      if (isCorrectAnswer) {
+                          className = 'correct';
+                          icon = '<i class="fas fa-check-circle"></i>';
+                      } else {
+                          // 所有非正确答案都标红
+                          className = 'incorrect';
+                          // 如果这个选项是用户选择的，才显示叉号图标
+                          if (isUserAnswer) {
+                               icon = '<i class="fas fa-times-circle"></i>';
+                          }
+                      }
+                      
+                      // 移除选项文本中可能存在的字母前缀
+                      const optionText = option.replace(/^[A-Z]\.\s*/, '');
+                      
+                      return `
+                          <div class="option ${className}">
+                              <span class="option-letter">${letter}.</span>
+                              ${optionText}
+                              ${icon}
+                              ${isUserAnswer ? '<span class="user-answer-mark">你的选择</span>' : ''}
+                              ${isCorrectAnswer ? '<span class="correct-answer-mark">正确答案</span>' : ''}
+                          </div>
+                      `;
+                  }).join('');
+                  
+                  resultDiv.innerHTML = `
+                      <div class="question-title">
+                          <span class="question-number">${index + 1}. </span>
+                          ${result.question.question}
+                          <span class="status ${result.isCorrect ? 'correct' : 'incorrect'}">
+                              ${result.isCorrect ? '<i class="fas fa-check"></i> 正确' : '<i class="fas fa-times"></i> 错误'}
+                          </span>
+                          ${Array.isArray(result.question.answer) ? ' <span class="question-type">(多选题)</span>' : ''}
+                      </div>
+                      <div class="options">
+                          ${optionsHtml}
+                      </div>
+                      <div class="answer-comparison">
+                          <p><strong>你的答案：</strong> <span class="user-answer">${formatAnswer(result.userAnswer)}</span></p>
+                          <p><strong>正确答案：：</strong> <span class="correct-answer">${formatAnswer(result.question.answer)}</span></p>
+                      </div>
+                  `;
+              }
+              resultDetails.appendChild(resultDiv);
+          });
+      }
+      
+      // 更新格式化答案的辅助函数
+      function formatAnswer(answer) {
+          if (!answer) return '未作答';
+          if (Array.isArray(answer)) {
+              return answer.sort().join('、');
+          }
+          return answer;
+      }
+      
       function calculateResults() {
           clearInterval(timerInterval);
           const totalElapsed = Math.floor((Date.now() - startTime) / 1000);
@@ -30633,32 +30817,31 @@
           let correct = 0;
           let incorrectQuestions = [];
           shuffledQuestions.forEach(q => {
-              if (q.options.length === 0) return; // 跳过没有选项的题目
-              
-              let isCorrect = false;
-              if (Array.isArray(q.answer)) {
-                  isCorrect = arraysEqual(
-                      (userAnswers[q.id] || []).sort(),
-                      q.answer.sort()
-                  );
-              } else {
-                  isCorrect = userAnswers[q.id] === q.answer;
-              }
-              
               results[q.id] = {
                   question: q,
                   userAnswer: userAnswers[q.id] || '',
-                  isCorrect: isCorrect
+                  isCorrect: q.options.length === 0 ? true : (userAnswers[q.id] === q.answer)
               };
               
-              if (isCorrect) {
-                  correct++;
-              } else {
-                  incorrectQuestions.push(q);
+              if (q.options.length > 0) {
+                  let isCorrect = false;
+                  if (Array.isArray(q.answer)) {
+                      isCorrect = arraysEqual(
+                          (userAnswers[q.id] || []).sort(),
+                          q.answer.sort()
+                      );
+                  } else {
+                      isCorrect = userAnswers[q.id] === q.answer;
+                  }
+                  
+                  if (isCorrect) {
+                      correct++;
+                  } else {
+                      incorrectQuestions.push(q);
+                  }
               }
           });
           
-          // 保存错题集到sessionStorage
           if (incorrectQuestions.length > 0) {
               sessionStorage.setItem('incorrectQuestions', JSON.stringify(incorrectQuestions));
           } else {
@@ -30679,6 +30862,35 @@
           document.getElementById('summary-total').textContent = totalQuestions;
           document.getElementById('summary-accuracy').textContent = `${accuracy}%`;
           document.getElementById('summary-time').textContent = formattedTotalTime;
+          
+          // 添加评价逻辑
+          const evaluationText = document.getElementById('evaluation-text');
+          let evaluation = '';
+          let evaluationColor = '';
+          
+          if (accuracy >= 90) {
+              evaluation = '太棒了！老婆大人真是太厉害了！继续保持哦～';
+              evaluationColor = '#27ae60';
+          } else if (accuracy >= 80) {
+              evaluation = '做得很好！再努力一点点就能更完美了～';
+              evaluationColor = '#2ecc71';
+          } else if (accuracy >= 70) {
+              evaluation = '不错哦！继续加油，相信你下次会做得更好！';
+              evaluationColor = '#f1c40f';
+          } else if (accuracy >= 60) {
+              evaluation = '还可以，但还有提升空间，要不要再试一次？';
+              evaluationColor = '#e67e22';
+          } else {
+              evaluation = '这次可能有点小失误，要不要重新测试一下？';
+              evaluationColor = '#e74c3c';
+          }
+          
+          evaluationText.textContent = evaluation;
+          evaluationText.style.color = evaluationColor;
+          
+          // 添加动画效果
+          const resultEvaluation = document.getElementById('result-evaluation');
+          resultEvaluation.style.animation = 'fadeIn 0.5s ease';
           
           displayResults('all');
       }
@@ -30710,61 +30922,30 @@
           window.scrollTo({ top: 0, behavior: 'smooth' });
       }
       
-      function displayResults(filter) {
-          const resultDetails = document.getElementById('result-details');
-          resultDetails.innerHTML = '';
-          Object.values(results).forEach((result, index) => {
-              if (filter === 'incorrect' && result.isCorrect) return;
-              const resultDiv = document.createElement('div');
-              resultDiv.className = `question fade-in ${result.isCorrect ? 'correct' : 'incorrect'}`;
-              resultDiv.innerHTML = `
-                  <div class="question-title">
-                      <span class="question-number">${index + 1}. </span>
-                      ${result.question.question}
-                      <span class="status ${result.isCorrect ? 'correct' : 'incorrect'}">
-                          ${result.isCorrect ? '<i class="fas fa-check"></i> 正确' : '<i class="fas fa-times"></i> 错误'}
-                      </span>
-                  </div>
-                  <div class="options">
-                      ${result.question.options.map(option => {
-                          const letter = option.charAt(0);
-                          let className = '';
-                          let icon = '';
-                          
-                          if (letter === result.question.answer) {
-                              className = 'correct';
-                              icon = '<i class="fas fa-check-circle"></i>';
-                          } else if (letter === result.userAnswer && letter !== result.question.answer) {
-                              className = 'incorrect';
-                              icon = '<i class="fas fa-times-circle"></i>';
-                          }
-                          
-                          return `
-                              <div class="option ${className}">
-                                  ${option} ${icon}
-                              </div>
-                          `;
-                      }).join('')}
-                  </div>
-              `;
-              resultDetails.appendChild(resultDiv);
-          });
-      }
-      
       // 监听考试模式下的答案选项变化
       document.addEventListener('change', function(e) {
-          if (currentMode === 'exam' && e.target.type === 'radio' && e.target.name.startsWith('question-')) {
-              const questionId = parseInt(e.target.name.replace('question-', ''));
-              userAnswers[questionId] = e.target.value;
-              
-              // 更新选项UI
-              const questionDiv = e.target.closest('.question');
-              questionDiv.querySelectorAll('.option').forEach(opt => {
-                  opt.classList.remove('selected');
-              });
-              e.target.closest('.option').classList.add('selected');
-              
-              updateProgressBar();
+          if (currentMode === 'exam') {
+              if (e.target.type === 'radio' && e.target.name.startsWith('question-')) {
+                  const questionId = parseInt(e.target.name.replace('question-', ''));
+                  userAnswers[questionId] = e.target.value;
+                  
+                  // 更新选项UI
+                  const questionDiv = e.target.closest('.question');
+                  questionDiv.querySelectorAll('.option').forEach(opt => {
+                      opt.classList.remove('selected');
+                  });
+                  e.target.closest('.option').classList.add('selected');
+                  
+                  updateProgressBar();
+              } else if (e.target.type === 'checkbox' && e.target.name.startsWith('question-')) {
+                  const questionId = parseInt(e.target.name.replace('question-', ''));
+                  const questionDiv = e.target.closest('.question');
+                  const selectedOptions = Array.from(questionDiv.querySelectorAll('input[type="checkbox"]:checked'))
+                      .map(input => input.value);
+                  
+                  userAnswers[questionId] = selectedOptions;
+                  updateProgressBar();
+              }
           }
       });
       
@@ -30857,22 +31038,40 @@
               questionDiv.id = `question-${q.id}`;
               
               let optionsHtml = '';
-              q.options.forEach(option => {
-                  const optionLetter = option.charAt(0);
-                  optionsHtml += `
-                      <div class="option" data-option="${optionLetter}">
-                          <label>
-                              <input type="radio" name="question-${q.id}" value="${optionLetter}">
-                              ${option}
-                          </label>
+              if (q.options.length === 0) {
+                  // 简答题
+                  userAnswers[q.id] = 'completed';
+                  optionsHtml = `
+                      <div class="text-answer">
+                          <textarea class="text-input" placeholder="请输入你的答案..." rows="4"></textarea>
                       </div>
                   `;
-              });
+              } else {
+                  // 选择题
+                  q.options.forEach((option, optIndex) => {
+                      // 检查选项是否已经有字母前缀
+                      const hasLetter = /^[A-Z]\.\s/.test(option);
+                      const optionLetter = hasLetter ? option.charAt(0) : String.fromCharCode(65 + optIndex);
+                      const optionText = hasLetter ? option : `${optionLetter}. ${option}`;
+                      const inputType = Array.isArray(q.answer) ? 'checkbox' : 'radio';
+                      
+                      optionsHtml += `
+                          <div class="option" data-option="${optionLetter}">
+                              <label>
+                                  <input type="${inputType}" name="question-${q.id}" value="${optionLetter}">
+                                  ${optionText}
+                              </label>
+                          </div>
+                      `;
+                  });
+              }
               
               questionDiv.innerHTML = `
                   <div class="question-title">
                       <span class="question-number">${index + 1}. </span>
                       ${q.question}
+                      ${Array.isArray(q.answer) ? ' <span class="question-type">(多选题)</span>' : ''}
+                      ${q.options.length === 0 ? ' <span class="question-type">(简答题)</span>' : ''}
                   </div>
                   <div class="options">
                       ${optionsHtml}
